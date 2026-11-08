@@ -183,7 +183,7 @@ Result: The final verification showed 22/22 context switches, 11/11 completed pr
 
 **Your Answer:** *(5-7 sentences)*
 
-[Write your answer here.]
+[I learned that synchronization is important when multiple threads share the same resources. Without synchronization, race conditions can happen and cause incorrect results. I used ReentrantLock to protect critical sections in the ready queue. I also learned that mutual exclusion prevents multiple threads from changing shared data at the same time. The counting semaphore helped replace busy waiting and allowed CPUs to wait more efficiently. After the changes, the verification showed zero busy-waiting polls.]
 
 ## Question 2: What was the most challenging part of this assignment?
 
@@ -191,7 +191,7 @@ Result: The final verification showed 22/22 context switches, 11/11 completed pr
 
 **Your Answer:** *(5-7 sentences)*
 
-[Write your answer here.]
+[The most challenging part of this assignment was understanding how threads communicate and share resources safely. At first, the CPU used busy waiting when the ready queue was empty. I had difficulty understanding how to replace this behavior with a semaphore. I studied the ReadyQueue and CpuWorker classes to understand how they work together. I changed the code to use a counting semaphore instead of repeatedly checking the queue. After running the program again, the busy-waiting polls became zero, and the verification passed.]
 
 ## Question 3: How did you overcome the challenges you faced?
 
@@ -199,7 +199,7 @@ Result: The final verification showed 22/22 context switches, 11/11 completed pr
 
 **Your Answer:** *(5-7 sentences)*
 
-[Write your answer here.]
+[I started by reading the existing code to understand how the threads worked. I focused on the ReadyQueue and CpuWorker classes. I checked how the program handled an empty ready queue. I learned how ReentrantLock protects shared data from race conditions. I replaced the busy-waiting behavior with a counting semaphore. After making the changes, I saved and ran the program several times. Finally, the verification showed zero busy-waiting polls.]
 
 ## Question 4: Where can synchronization concepts be applied in real-world applications?
 
@@ -207,7 +207,7 @@ Result: The final verification showed 22/22 context switches, 11/11 completed pr
 
 **Your Answer:** *(5-7 sentences)*
 
-[Write your answer here.]
+[Synchronization is used in many real-world applications. In banking systems, it prevents two transactions from changing the same account balance at the same time. In ticket booking systems, it prevents two people from booking the same seat. In online shopping, locks help protect shared inventory data. In databases, synchronization keeps shared information consistent. Print queues also use synchronization to organize multiple printing requests. These examples show why synchronization is important in computer systems.]
 
 ### Optional: What would you like to learn more about?
 
@@ -241,20 +241,29 @@ Result: The final verification showed 22/22 context switches, 11/11 completed pr
 
 **Your Answer:** *(3-5 sentences)*
 
-[Write your answer here.]
+[In my original program, multiple CPU threads accessed the shared completedProcessCount variable without proper synchronization. Two CPUs could read the same counter value before either one updated it. Both CPUs could then write the same increased value, causing a lost update. As a result, the observed completed process count could be lower than the expected value of 11, and the program might trigger the watchdog. This problem is difficult to detect on real computers because thread execution timing changes between runs, so the error may not happen every time.]
 
 Verification block of the **original starter**:
-```
-[Paste the verification block (or the exception/watchdog message) of the starter here]
+```=== VERIFICATION (expected values are computed from YOUR seed) ===
+Context switches (quanta executed) expected 22 observed 22
+Completed processes expected 11 observed 11
+Total service time (ms) expected 65268 observed 65268
+Busy-waiting polls (must be 0) expected 0 observed 2 MISMATCH
+At least one check failed: a race condition or busy waiting is still present.
 ```
 
 Verification block of **my final version**:
 ```
-[Paste the verification block of your final version here (all lines ✔)]
+=== VERIFICATION (expected values are computed from YOUR seed) ===
+Context switches (quanta executed) expected 22 observed 22
+Completed processes expected 11 observed 11
+Total service time (ms) expected 65268 observed 65268
+Busy-waiting polls (must be 0) expected 0 observed 0
+All shared values are consistent.
 ```
 
 **Explanation of the timeline:**
-[Explain the lost update step by step.]
+[A lost update can happen when two CPU workers access the same shared counter at the same time. For example, CPU-1 and CPU-3 both read the value 12 from contextSwitchCount. Both calculate 13 and write the same value, so one increment is lost and the final value becomes 13 instead of 14. In my original run, the verification showed 2 busy-waiting polls instead of the expected 0, while the context switch count was correct at 22. This problem is difficult to detect on real computers because thread timing changes between runs, so the error may not happen every time.]
 
 ## Question 2: Critical Sections and Lock Granularity
 
@@ -264,12 +273,12 @@ Verification block of **my final version**:
 
 **Your Answer:** *(3-5 sentences)*
 
-[Write your answer here.]
+[I protected the shared statistics using one ReentrantLock called statsLock. It protects contextSwitchCount, completedProcessCount, and totalServiceTime in their update and read methods. I used a separate ReentrantLock called queueLock to protect the ready queue’s shared list and map, because multiple CPU threads access them concurrently. Using one lock for statistics makes the code simpler and keeps the counters consistent, while a separate queue lock prevents queue operations from unnecessarily blocking statistics updates. Both locks provide mutual exclusion and allow progress when released; however, the default non-fair ReentrantLock does not guarantee bounded waiting, so a thread may wait longer than others.]
 
-| Critical section (variable / method) | Lock used | Why it needs protection |
-|---|---|---|
-| [e.g., `ReadyQueue.poll()`] | [lock name] | [reason] |
-| [...] | [...] | [...] |
+| Critical section (| `contextSwitchCount` | `statsLock` | Prevent lost updates when multiple CPUs update the counter |
+| `completedProcessCount` | `statsLock` | Protect the shared counter from race conditions |
+| `totalServiceTime` | `statsLock` | Prevent incorrect updates to shared service time |
+| ReadyQueue `list` and `map` | `queueLock` | Protect shared queue operations from concurrent access |
 
 ## Question 3: Busy Waiting vs Semaphore
 
@@ -279,7 +288,7 @@ Verification block of **my final version**:
 
 **Your Answer:** *(3-5 sentences)*
 
-[Write your answer here.]
+[In the original starter, the verification showed 2 busy-waiting polls because CPUs repeatedly checked the ready queue. In my final version, busy-waiting polls became 0 because the counting semaphore blocks CPUs instead of making them repeatedly check the queue. The semaphore available starts at 0 because the queue is initially empty, and after the 11 initial add() calls, its value becomes 11. When a CPU calls acquire(), it waits if no process is available, and the last CPU calls release(totalCPUs) to wake waiting CPU threads. Without this final release, CPUs could remain blocked and the program might not terminate.]
 
 ## Question 4: Classical Problems and Deadlock
 
@@ -290,24 +299,24 @@ Verification block of **my final version**:
 **Your Answer:** *(3-5 sentences)*
 
 **Classical problem and roles**:
-[Name the problem; who is the producer, who is the consumer?]
+[This is the Producer-Consumer (Bounded-Buffer) problem. The CPU threads act as producers when they re-enqueue processes into the ready queue, and consumers when they pick processes from the queue.]
 
 **Semaphores for a bounded queue (name and initial value)**:
-[Name the three semaphores and their initial values.]
+[The three semaphores are empty = K, full = 0, and mutex = 1. Empty counts available slots, full counts processes in the queue, and mutex protects the shared queue from simultaneous access.]
 
 **Deadlock scenario and prevention**:
-[Describe the scenario and the necessary condition you would break.]
+[A deadlock can happen if a producer acquires the mutex while the ready queue is full and then waits for an empty slot. The consumer cannot remove a process because it is waiting for the same mutex, so both threads wait forever. This creates hold-and-wait and circular wait conditions. I prevent this by acquiring the empty or full semaphore before the mutex, releasing the mutex before waiting again, and always acquiring multiple locks in the same order.]
 
 ## Summary
 
 **Key concepts I understood through these questions:**
-1.
-2.
-3.
+1. Synchronization prevents race conditions when multiple threads share resources.
+2. Locks and critical sections provide mutual exclusion and protect shared data.
+3. Counting semaphores prevent busy waiting and help coordinate CPU threads.
 
 **Concepts I need to study more:**
-1.
-2.
+1. Understanding deadlock conditions and how to prevent them.
+2. Understanding semaphore operations and lock ordering.
 
 ---
 
