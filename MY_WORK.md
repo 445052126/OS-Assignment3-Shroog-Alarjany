@@ -110,104 +110,47 @@
 >
 > 📌 **NOTE:** Each entry needs: date and time, what you did, details, challenges, solution, and time spent. Real challenges are fine (and expected). Do not invent fake ones.
 
-## Example Entry (do not copy it, write your own)
+Entry 1 – November 7, 2026
 
-### Entry 1 - [November 2, 2026, 4:30 PM]
-**What I did**: Forked the repository, set my student ID, and ran the original starter
+What I did: Set up the GitHub repository and reviewed the starter project.
 
-**Details**:
-- Forked the starter repository and renamed it
-- Changed student ID on line 304 to my actual ID (441234567)
-- Ran the original program: 4 CPUs started, three of them picked `P1`, then `IllegalThreadStateException` and the watchdog stopped the program
-- Saved the output in a text file for Question 1
-- Committed and pushed: `Set my student ID: 441234567`
+Challenge: Understanding the project structure.
 
-**Challenges**: I did not understand why the same process was picked by three CPUs
+Solution: Reviewed the Java classes and identified the main components.
 
-**Solution**: Read `ReadyQueue.poll()` again and found the `RaceWindow.pause()` between reading the head and removing it
+Entry 2 – November 7, 2026
 
-**Time spent**: 45 minutes
+What I did: Implemented synchronization for the ReadyQueue.
 
----
+Challenge: Preventing concurrent access to the shared queue.
 
-## Your Development Log
+Solution: Used ReentrantLock with try-finally to protect queue operations.
 
-### Entry 1 - [Date and Time]
-**What I did**:
+Entry 3 – November 8, 2026
 
-**Details**:
+What I did: Worked on synchronizing shared statistics.
 
-**Challenges**:
+Challenge: Preventing race conditions when updating shared counters.
 
-**Solution**:
+Solution: Used ReentrantLock to protect shared statistics.
 
-**Time spent**:
+Entry 4 – November 8, 2026
 
----
+What I did: Implemented counting semaphore synchronization.
 
-### Entry 2 - [Date and Time]
-**What I did**:
+Challenge: Replacing the busy-waiting mechanism.
 
-**Details**:
+Solution: Used Semaphore acquire() and release() to manage CPU workers.
 
-**Challenges**:
+Entry 5 – November 8, 2026
 
-**Solution**:
+What I did: Tested the scheduler simulation.
 
-**Time spent**:
+Challenge: The first verification showed 2 busy-waiting polls.
 
----
+Solution: Updated the CPU worker shutdown behavior.
 
-### Entry 3 - [Date and Time]
-**What I did**:
-
-**Details**:
-
-**Challenges**:
-
-**Solution**:
-
-**Time spent**:
-
----
-
-### Entry 4 - [Date and Time]
-**What I did**:
-
-**Details**:
-
-**Challenges**:
-
-**Solution**:
-
-**Time spent**:
-
----
-
-### Entry 5 - [Date and Time]
-**What I did**:
-
-**Details**:
-
-**Challenges**:
-
-**Solution**:
-
-**Time spent**:
-
----
-
-### Entry 6 - [Optional - Date and Time]
-**What I did**:
-
-**Details**:
-
-**Challenges**:
-
-**Solution**:
-
-**Time spent**:
-
+Result: The final verification showed 22/22 context switches, 11/11 completed processes, 65268/65268 service time, and 0 busy-waiting polls.
 ---
 
 ## Development Log Summary
